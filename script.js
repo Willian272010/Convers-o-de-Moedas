@@ -1,85 +1,76 @@
-const form = document.querySelector("#form-conversao");
-const valorInput = document.querySelector("#valor");
-const moedaSelect = document.querySelector("#moeda");
-const resultado = document.querySelector("#resultado");
-const botao = document.querySelector("#btn-converter");
+async function convert() {
+    const valueInput = document.getElementById("value");
+    const currencySelect = document.getElementById("currency");
+    const result = document.getElementById("result");
+    const button = document.querySelector("button");
 
-const moedas = {
-    usd: {
-        codigo: "USD",
-        nome: "Dólar americano"
-    },
-    eur: {
-        codigo: "EUR",
-        nome: "Euro"
-    }
-};
+    const value = Number(valueInput.value);
+    const currency = currencySelect.value;
 
-form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+    // Limpa o resultado anterior
+    result.textContent = "";
 
-    const valor = Number(valorInput.value);
-    const moedaSelecionada = moedaSelect.value;
-
-    // Validação do valor informado
-    if (!valor || valor <= 0) {
-        resultado.textContent = "Digite um valor válido para converter.";
-        return;
-    }
-
-    // Verifica se a moeda existe
-    const moeda = moedas[moedaSelecionada];
-
-    if (!moeda) {
-        resultado.textContent = "Selecione uma moeda válida.";
+    // Validação
+    if (!Number.isFinite(value) || value <= 0) {
+        result.textContent = "Digite um valor válido.";
         return;
     }
 
     // Estado de carregamento
-    botao.disabled = true;
-    botao.textContent = "Convertendo...";
-    resultado.textContent = "Consultando cotação...";
+    button.disabled = true;
+    button.textContent = "Convertendo...";
 
     try {
-        const response = await fetch("/api/converter", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                valor: valor,
-                moeda: moeda.codigo
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Não foi possível realizar a conversão.");
-        }
+        const response = await fetch(
+            `/api/converter?value=${encodeURIComponent(value)}&currency=${encodeURIComponent(currency)}`
+        );
 
         const data = await response.json();
 
-        if (!data.resultado) {
-            throw new Error("O servidor não retornou um resultado válido.");
+        // Tratamento de erro da API
+        if (!response.ok) {
+            result.textContent = data.error || "Não foi possível realizar a conversão.";
+            return;
         }
 
-        const valorConvertido = Number(data.resultado);
+        // Formatação do resultado
+        const currencyFormat = {
+            usd: {
+                locale: "en-US",
+                currency: "USD"
+            },
+            eur: {
+                locale: "de-DE",
+                currency: "EUR"
+            }
+        };
 
-        resultado.textContent =
-            `R$ ${valor.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })} = ${valorConvertido.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })} ${moeda.codigo}`;
+        const format = currencyFormat[currency];
+
+        if (!format) {
+            result.textContent = "Moeda não suportada.";
+            return;
+        }
+
+        const formattedResult = new Intl.NumberFormat(
+            format.locale,
+            {
+                style: "currency",
+                currency: format.currency
+            }
+        ).format(data.result);
+
+        result.textContent = formattedResult;
 
     } catch (error) {
         console.error("Erro na conversão:", error);
 
-        resultado.textContent =
-            "Não foi possível realizar a conversão. Tente novamente.";
+        result.textContent =
+            "Erro ao conectar com o servidor. Verifique se o backend está funcionando.";
+
     } finally {
-        botao.disabled = false;
-        botao.textContent = "Converter";
+        // Restaura o botão
+        button.disabled = false;
+        button.textContent = "Converter";
     }
-});
+}
