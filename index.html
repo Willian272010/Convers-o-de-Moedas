@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Conversor de Moedas</title>
+
+    <link rel="stylesheet" href="estilo.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <div class="converter">
+
+            <h1>💰 Conversor de Moedas</h1>
+
+            <p>Converta valores entre Real, Dólar e Euro.</p>
+
+            <div class="form-group">
+
+                <label for="value">
+                    Valor
+                </label>
+
+                <input
+                    type="number"
+                    id="value"
+                    placeholder="Digite um valor"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="currency">
+                    Converter para
+                </label>
+
+                <select id="currency">
+
+                    <option value="usd">
+                        Dólar (USD)
+                    </option>
+
+                    <option value="eur">
+                        Euro (EUR)
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button onclick="convert()">
+                Converter
+            </button>
+
+            <div class="result" id="result">
+                R$ 0,00
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
